@@ -1,6 +1,8 @@
 <?php
 namespace App\Controller;
 
+use App\Controller\AppController;
+
 class ArticlesController extends AppController
 {
     public function initialize(): void
@@ -34,6 +36,8 @@ class ArticlesController extends AppController
             }
             $this->Flash->error(__('Unable to add your article.'));
         }
+        $tags = $this->Articles->Tags->find('list');
+        $this->set('tags', $tags);
         $this->set('article', $article);
     }
 
@@ -41,6 +45,7 @@ class ArticlesController extends AppController
     {
         $article = $this->Articles
             ->findBySlug($slug)
+            ->contain('Tags')
             ->firstOrFail();
         if ($this->request->is(['post', 'put'])) {
             $this->Articles->patchEntity($article, $this->request->getData());
@@ -50,6 +55,8 @@ class ArticlesController extends AppController
             }
             $this->Flash->error(__('Unable to update your article.'));
         }
+        $tags = $this->Articles->Tags->find('list');
+        $this->set('tags', $tags);
         $this->set('article', $article);
     }
 
