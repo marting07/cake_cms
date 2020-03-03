@@ -24,6 +24,7 @@
 use Cake\Http\Middleware\CsrfProtectionMiddleware;
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
+use Cake\Routing\Router;
 
 /*
  * The default class to use for all routes
@@ -43,11 +44,11 @@ use Cake\Routing\RouteBuilder;
  * `:action` markers.
  */
 /** @var \Cake\Routing\RouteBuilder $routes */
-$routes->setRouteClass(DashedRoute::class);
+Router::defaultRouteClass(DashedRoute::class);
 
-$routes->scope('/', function (RouteBuilder $builder) {
+Router::scope('/', function (RouteBuilder $routes) {
     // Register scoped middleware for in scopes.
-    $builder->registerMiddleware('csrf', new CsrfProtectionMiddleware([
+    $routes->registerMiddleware('csrf', new CsrfProtectionMiddleware([
         'httpOnly' => true,
     ]));
 
@@ -55,19 +56,23 @@ $routes->scope('/', function (RouteBuilder $builder) {
      * Apply a middleware to the current route scope.
      * Requires middleware to be registered through `Application::routes()` with `registerMiddleware()`
      */
-    $builder->applyMiddleware('csrf');
+    $routes->applyMiddleware('csrf');
 
     /*
      * Here, we are connecting '/' (base path) to a controller called 'Pages',
      * its action called 'display', and we pass a param to select the view file
      * to use (in this case, templates/Pages/home.php)...
      */
-    $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+    $routes->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
 
     /*
      * ...and connect the rest of 'Pages' controller's URLs.
      */
-    $builder->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
+    $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
+
+    $routes->scope('/articles', function (RouteBuilder $routes) {
+        $routes->connect('/tagged/*', ['controller' => 'Articles', 'action' => 'tags']);
+    });
 
     /*
      * Connect catchall routes for all controllers.
@@ -82,7 +87,7 @@ $routes->scope('/', function (RouteBuilder $builder) {
      * You can remove these routes once you've connected the
      * routes you want in your application.
      */
-    $builder->fallbacks();
+    $routes->fallbacks(DashedRoute::class);
 });
 
 /*
